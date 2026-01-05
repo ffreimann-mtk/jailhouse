@@ -37,7 +37,7 @@
  */
 
 #ifndef CONFIG_INMATE_BASE
-#define CONFIG_INMATE_BASE	0x0
+#define CONFIG_INMATE_BASE	_CONFIG_INMATE_BASE_
 #endif
 
 #define NULL			((void *)0)
