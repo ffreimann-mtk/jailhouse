@@ -17,6 +17,8 @@
 #define _MT8390_INT_LATENCY_H
 
 
+#define CLK_BASE           (0x10001000)
+
 #define GPIO_BASE          (0x10005000)
 #define GPIO_DATA_IN       (GPIO_BASE + 0x00000000)
 #define GPIO_DATA_OUT      (GPIO_BASE + 0x00000100)
@@ -33,6 +35,7 @@
 #define GPIO_OUT  1
 
 
+#define MAP_CLK   map_range ((void*) CLK_BASE,  0x1000, MAP_UNCACHED)
 #define MAP_GPIO  map_range ((void*) GPIO_BASE, 0x1000, MAP_UNCACHED)
 #define MAP_EINT  map_range ((void*) EINT_BASE, 0x1000, MAP_UNCACHED)
 #define MAP_UART  map_range ((void*)0x11001200, 0x0100, MAP_UNCACHED)

@@ -62,6 +62,11 @@
                       ((_num_of_bits & ACCESS_NUM_OF_BITS_MASK) << ACCESS_NUM_OF_BITS_SHIFT) |                                           \
                       ((((REG_NAME (_name) - REG_NAME (_base)) >> REG_DIST_IDX_SHIFT) & ACCESS_DIST_IDX_MASK) << ACCESS_DIST_IDX_SHIFT))
 
+#define ACCESS_DESCR_WITH_IDX(_name, _idx, _type, _num_of_bits)                                                                          \
+    (access_descr_t) (((_type & ACCESS_TYPE_MASK) << ACCESS_TYPE_SHIFT) |                                                                \
+                      ((_num_of_bits & ACCESS_NUM_OF_BITS_MASK) << ACCESS_NUM_OF_BITS_SHIFT) |                                           \
+                      ((_idx & ACCESS_DIST_IDX_MASK) << ACCESS_DIST_IDX_SHIFT))
+
 
 typedef u16  access_descr_t;
 

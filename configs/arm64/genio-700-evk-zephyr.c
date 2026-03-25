@@ -19,7 +19,7 @@ struct {
     __u32 smc_ids [1];
 	struct jailhouse_memory mem_regions[3];
 	struct jailhouse_irqchip irqchips[2];
-	struct jailhouse_vendor vendors[2];
+	struct jailhouse_vendor vendors[3];
 } __attribute__((packed)) config = {
 	.cell = {
 		.signature = JAILHOUSE_CELL_DESC_SIGNATURE,
@@ -110,17 +110,14 @@ struct {
 			.mtk_gpio.pin_bitmap = {
 				0x00000146, 0x00000000, 0x00000000, 0x00000000	/* Pins 33 & 34 for UART1; GPIO 38 & 40 */
 			}
-		}
-/*
-		,
+		},
 		{
-			.type = JAILHOUSE_VENDOR_MTK_GPIO,
-			.mtk_gpio.address    = 0x10005000,
-			.mtk_gpio.pin_base   = 96,
-			.mtk_gpio.pin_bitmap = {
-				0x00000140, 0x00000000, 0x00000000, 0x00000000	/ * GPIO 38 & 40 * /
+			.type = JAILHOUSE_VENDOR_MTK_CLK,
+			.mtk_clk.address    = 0x10001000,
+			.mtk_clk.clk_base   = 0,
+			.mtk_clk.clk_bitmap = {
+				0x00800000, 0x00000000, 0x00000000, 0x00000000	/* CLK for UART1 */
 			}
 		}
-*/
 	},
 };

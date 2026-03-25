@@ -1,7 +1,7 @@
 /*
  * Jailhouse, a Linux-based partitioning hypervisor
  *
- * Test configuration for GENION-700-EVK (4 * Cortex-A55 and 2 * Cortex-A78, 4GB RAM)
+ * Test configuration for GENION-700-EVK (4 * Cortex-A55 and 4 * Cortex-A78, 8GB RAM)
  *
  * Copyright (c) MediaTek, 2025
  *
@@ -19,9 +19,9 @@ struct {
 	struct jailhouse_system header;
 	__u64 cpus[1];
     __u32 smc_ids [12];
-	struct jailhouse_memory mem_regions[16];
+	struct jailhouse_memory mem_regions[17];
 	struct jailhouse_irqchip irqchips[8];
-	struct jailhouse_vendor vendors[4];
+	struct jailhouse_vendor vendors[6];
 } __attribute__((packed)) config = {
 	.header = {
 		.signature = JAILHOUSE_SYSTEM_SIGNATURE,
@@ -82,7 +82,9 @@ struct {
 	.mem_regions = {
 		/* MMIO:           0x0000'0000'0000'0000 - 0x0000'0000'0c00'0000 */
 		/* GIC:            0x0000'0000'0c00'0000 - 0x0000'0000'0c24'0000 */
-		/* MMIO:           0x0000'0000'0c24'0000 - 0x0000'0000'1000'5000 */
+		/* MMIO:           0x0000'0000'0c24'0000 - 0x0000'0000'1000'1000 */
+		/* CLK:            0x0000'0000'1000'1000 - 0x0000'0000'1000'2000 */
+		/* MMIO:           0x0000'0000'1000'2000 - 0x0000'0000'1000'5000 */
 		/* GPIO:           0x0000'0000'1000'5000 - 0x0000'0000'1000'6000 */
 		/* MMIO:           0x0000'0000'1000'6000 - 0x0000'0000'1000'c000 */
 		/* EINT:           0x0000'0000'1000'b000 - 0x0000'0000'1000'c000 */
@@ -108,11 +110,19 @@ struct {
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO
 		},
 		/* GIC:   0x0000'0000'0c00'0000 - 0x0000'0000'0c24'0000 */
-		/* MMIO:  0x0000'0000'0c24'0000 - 0x0000'0000'1000'5000 */
+		/* MMIO:  0x0000'0000'0c24'0000 - 0x0000'0000'1000'1000 */
 		{
 			.phys_start = 0x0c240000,
 			.virt_start = 0x0c240000,
-			.size = 0x03dc5000,
+			.size = 0x03dc1000,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO
+		},
+		/* CLK:   0x0000'0000'1000'1000 - 0x0000'0000'1000'2000 */
+		/* MMIO:  0x0000'0000'1000'2000 - 0x0000'0000'1000'5000 */
+		{
+			.phys_start = 0x10002000,
+			.virt_start = 0x10002000,
+			.size = 0x00003000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO
 		},
 		/* GPIO:  0x0000'0000'1000'5000 - 0x0000'0000'1000'6000 */
@@ -314,6 +324,22 @@ struct {
 			.mtk_gpio.address    = 0x10005000,
 			.mtk_gpio.pin_base   = 128,
 			.mtk_gpio.pin_bitmap = {
+				0xffffffff, 0xffffffff, 0x00000000, 0x00000000
+			}
+		},
+		{
+			.type = JAILHOUSE_VENDOR_MTK_CLK,
+			.mtk_clk.address    = 0x10001000,
+			.mtk_clk.clk_base   = 0,
+			.mtk_clk.clk_bitmap = {
+				0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff
+			}
+		},
+		{
+			.type = JAILHOUSE_VENDOR_MTK_CLK,
+			.mtk_clk.address    = 0x10001000,
+			.mtk_clk.clk_base   = 128,
+			.mtk_clk.clk_bitmap = {
 				0xffffffff, 0xffffffff, 0x00000000, 0x00000000
 			}
 		}

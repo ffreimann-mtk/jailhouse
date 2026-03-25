@@ -26,6 +26,7 @@ struct arch_cell {
 #ifdef CONFIG_VENDOR_MEDIATEK
 	u32 eint_bitmap [256 / 32];
 	u32 gpio_bitmap [256 / 32];
+	u32 clk_bitmap  [256 / 32];
 #endif
 	struct {
 		u8 ent_count;

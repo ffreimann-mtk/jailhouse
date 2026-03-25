@@ -97,5 +97,13 @@ struct {
 				0x00000003, 0x00000006, 0x00000000, 0x00000000	/* Pins 0 & 1 for GPIO, Pins 33 & 34 for UART1 */
 			}
 		},
+		{
+			.type = JAILHOUSE_VENDOR_MTK_CLK,
+			.mtk_clk.address    = 0x10001000,
+			.mtk_clk.clk_base   = 0,
+			.mtk_clk.clk_bitmap = {
+				0x00800000, 0x00000000, 0x00000000, 0x00000000	/* CLK for UART1 */
+			}
+		}
 	}
 };

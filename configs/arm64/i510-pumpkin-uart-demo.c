@@ -18,6 +18,7 @@ struct {
 	__u64 cpus[1];
     __u32 smc_ids [1];
 	struct jailhouse_memory mem_regions[3];
+	struct jailhouse_vendor vendors[1];
 } __attribute__((packed)) config = {
 	.cell = {
 		.signature = JAILHOUSE_CELL_DESC_SIGNATURE,
@@ -29,6 +30,7 @@ struct {
 		.cpu_set_size = sizeof(config.cpus),
 		.smc_ids_size = ARRAY_SIZE(config.smc_ids),
 		.num_memory_regions = ARRAY_SIZE(config.mem_regions),
+		.num_vendors        = ARRAY_SIZE(config.vendors),
 
 		.cpu_reset_address = CONFIG_INMATE_BASE,
 
@@ -70,4 +72,14 @@ struct {
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_COMM_REGION,
 		},
 	},
+	.vendors = {
+		{
+			.type = JAILHOUSE_VENDOR_MTK_CLK,
+			.mtk_clk.address    = 0x10001000,
+			.mtk_clk.clk_base   = 0,
+			.mtk_clk.clk_bitmap = {
+				0x00800000, 0x00000000, 0x00000000, 0x00000000	/* CLK for UART1 */
+			}
+		}
+	}
 };

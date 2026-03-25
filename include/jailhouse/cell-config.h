@@ -318,12 +318,14 @@ struct jailhouse_pio {
 	}
 
 /* Vendor specific descriptions ... */
-#define JAILHOUSE_VENDOR_ILLEGAL  (0ULL)
-#define JAILHOUSE_VENDOR_MTK_EINT (1ULL)
-#define JAILHOUSE_VENDOR_MTK_GPIO (2ULL)
+#define JAILHOUSE_VENDOR_ILLEGAL   (0ULL)
+#define JAILHOUSE_VENDOR_MTK_EINT  (1ULL)
+#define JAILHOUSE_VENDOR_MTK_GPIO  (2ULL)
+#define JAILHOUSE_VENDOR_MTK_CLK   (3ULL)
 
-#define JAILHOUSE_VENDOR_MTK_EINT_PINMAP_SIZE  4
-#define JAILHOUSE_VENDOR_MTK_GPIO_PINMAP_SIZE  4
+#define JAILHOUSE_VENDOR_MTK_EINT_BITMAP_SIZE  4
+#define JAILHOUSE_VENDOR_MTK_GPIO_BITMAP_SIZE  4
+#define JAILHOUSE_VENDOR_MTK_CLK_BITMAP_SIZE   4
 
 struct jailhouse_vendor
 {
@@ -333,13 +335,18 @@ struct jailhouse_vendor
 		struct {
 			__u64 address;
 			__u32 pin_base;
-			__u32 pin_bitmap [JAILHOUSE_VENDOR_MTK_EINT_PINMAP_SIZE];
+			__u32 pin_bitmap [JAILHOUSE_VENDOR_MTK_EINT_BITMAP_SIZE];
 		} __attribute__((packed)) mtk_eint;
 		struct {
 			__u64 address;
 			__u32 pin_base;
-			__u32 pin_bitmap [JAILHOUSE_VENDOR_MTK_GPIO_PINMAP_SIZE];
+			__u32 pin_bitmap [JAILHOUSE_VENDOR_MTK_GPIO_BITMAP_SIZE];
 		} __attribute__((packed)) mtk_gpio;
+		struct {
+			__u64 address;
+			__u32 clk_base;
+			__u32 clk_bitmap [JAILHOUSE_VENDOR_MTK_CLK_BITMAP_SIZE];
+		} __attribute__((packed)) mtk_clk;
 	} __attribute__((packed));
 } __attribute__((packed));
 
