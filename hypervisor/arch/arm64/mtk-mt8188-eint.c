@@ -344,7 +344,7 @@ static u32 addr_to_bitmap (struct mmio_access*  mmio,
                            access_descr_t       access_descr);
 
 
-static const eint_config_descr_t mt8370_eint_config_descr =
+static const eint_config_descr_t mt8188_eint_config_descr =
 {
     .addr_to_bitmap = addr_to_bitmap,
 
@@ -389,29 +389,29 @@ static u32 addr_to_bitmap (struct mmio_access*  mmio,
     return (0xffffffff);
 }
 
-static int mt8370_eint_cell_init (struct cell*  cell)
+static int mt8188_eint_cell_init (struct cell*  cell)
 {
     return (mtk_eint_cell_init (cell));
 }
 
-static void mt8370_eint_cell_exit (struct cell*  cell)
+static void mt8188_eint_cell_exit (struct cell*  cell)
 {
     mtk_eint_cell_exit (cell);
 }
 
-static unsigned int mt8370_eint_mmio_count_regions (struct cell*  cell)
+static unsigned int mt8188_eint_mmio_count_regions (struct cell*  cell)
 {
     return (mtk_eint_mmio_count_regions (cell));
 }
 
-static int mt8370_eint_init (void)
+static int mt8188_eint_init (void)
 {
-    return (mtk_eint_init (&mt8370_eint_config_descr));
+    return (mtk_eint_init (&mt8188_eint_config_descr));
 }
 
-static void mt8370_eint_shutdown (void)
+static void mt8188_eint_shutdown (void)
 {
     mtk_eint_shutdown ();
 }
 
-DEFINE_UNIT (mt8370_eint, "mt8370_eint");
+DEFINE_UNIT (mt8188_eint, "mt8188_eint");
