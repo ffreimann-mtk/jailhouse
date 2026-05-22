@@ -39,6 +39,8 @@ struct {
 			.divider = 0x2a,			/* baudrate = 38400 */
 			.type = JAILHOUSE_CON_TYPE_8250,
 			.flags = JAILHOUSE_CON_ACCESS_MMIO | JAILHOUSE_CON_REGDIST_4,
+            .gate_nr = 23,
+            .clock_reg = 0x10001084,
 		},
 	},
 
