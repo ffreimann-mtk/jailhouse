@@ -19,8 +19,9 @@ struct {
 	struct jailhouse_system header;
 	__u64 cpus[1];
     __u32 smc_ids [12];
-	struct jailhouse_memory mem_regions[17];
+	struct jailhouse_memory mem_regions[27];
 	struct jailhouse_irqchip irqchips[8];
+	struct jailhouse_pci_device pci_devices[1];
 	struct jailhouse_vendor vendors[6];
 } __attribute__((packed)) config = {
 	.header = {
@@ -39,6 +40,11 @@ struct {
 			.flags = JAILHOUSE_CON_ACCESS_MMIO | JAILHOUSE_CON_REGDIST_4,
 		},
 		.platform_info = {
+			.pci_mmconfig_base = 0x6b800000,
+			.pci_mmconfig_end_bus = 0,
+			.pci_is_virtual = 1,
+			.pci_domain = 1,
+
 			.arm = {
 				.gic_version = 3,
 				.gicd_base = 0x0c000000,
@@ -54,7 +60,10 @@ struct {
 			.smc_ids_size = ARRAY_SIZE(config.smc_ids),
 			.num_memory_regions = ARRAY_SIZE(config.mem_regions),
 			.num_irqchips = ARRAY_SIZE(config.irqchips),
+			.num_pci_devices = ARRAY_SIZE(config.pci_devices),
 			.num_vendors = ARRAY_SIZE(config.vendors),
+
+			.vpci_irq_base = 72, /* Not include 32 base */
 		},
 	},
 
@@ -102,6 +111,31 @@ struct {
 		/* Linux kernel:   0x0000'0000'6400'0000 - 0x0000'0000'66bc'0000 */
 		/* Hypervisor:     0x0000'0000'6ac0'0000 - 0x0000'0000'6b00'0000 */
 
+		/* IVSHMEM xxxx:00:00.0 */
+        {
+			.phys_start = 0x6ba00000,
+			.virt_start = 0x6ba00000,
+			.size = 0x1000,
+			.flags = JAILHOUSE_MEM_READ
+		},
+		{
+			.phys_start = 0x6ba01000,
+			.virt_start = 0x6ba01000,
+			.size = 0xc0000,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE
+		},
+		{
+			.phys_start = 0x6bac1000,
+			.virt_start = 0x6bac1000,
+			.size = 0x4000,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE
+		},
+		{
+			.phys_start = 0x6bac5000,
+			.virt_start = 0x6bac5000,
+			.size = 0x4000,
+			.flags = JAILHOUSE_MEM_READ
+		},
 		/* MMIO:  0x0000'0000'0000'0000 - 0x0000'0000'0c00'0000 */
 		{
 			.phys_start = 0x00000000,
@@ -219,11 +253,11 @@ struct {
 			.size = 0x00800000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_EXECUTE
 		},
-		/* DRAM:  0x0000'0000'6b80'0000 - 0x0000'0001'4000'0000 */
+		/* DRAM:  0x0000'0000'6bc0'0000 - 0x0000'0001'4000'0000 */
 		{
-			.phys_start = 0x6b800000,
-			.virt_start = 0x6b800000,
-			.size = 0xd4800000,
+			.phys_start = 0x6bc00000,
+			.virt_start = 0x6bc00000,
+			.size = 0xd4400000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_EXECUTE
 		},
 	},
@@ -294,6 +328,21 @@ struct {
             },
         },
 	},
+
+	.pci_devices = {
+		/* IVSHMEM xxxx:00:00.0 */
+        {
+			.type = JAILHOUSE_PCI_TYPE_IVSHMEM,
+			.domain = 1,
+			.bdf = 0 << 3,
+			.bar_mask = JAILHOUSE_IVSHMEM_BAR_MASK_INTX,
+			.shmem_regions_start = 0,
+			.shmem_dev_id = 0,
+			.shmem_peers = 2,
+			.shmem_protocol = JAILHOUSE_SHMEM_PROTO_UNDEFINED,
+		},
+	},
+
 	.vendors = {
 		{
 			.type = JAILHOUSE_VENDOR_MTK_EINT,

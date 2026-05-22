@@ -17,8 +17,9 @@ struct {
 	struct jailhouse_cell_desc cell;
 	__u64 cpus[1];
     __u32 smc_ids [1];
-	struct jailhouse_memory mem_regions[3];
-	struct jailhouse_irqchip irqchips[1];
+	struct jailhouse_memory mem_regions[7];
+	struct jailhouse_irqchip irqchips[2];
+	struct jailhouse_pci_device pci_devices[1];
 	struct jailhouse_vendor vendors[3];
 } __attribute__((packed)) config = {
 	.cell = {
@@ -32,7 +33,11 @@ struct {
 		.smc_ids_size       = ARRAY_SIZE(config.smc_ids),
 		.num_memory_regions = ARRAY_SIZE(config.mem_regions),
 		.num_irqchips       = ARRAY_SIZE(config.irqchips),
+		.num_pci_devices    = ARRAY_SIZE(config.pci_devices),
 		.num_vendors        = ARRAY_SIZE(config.vendors),
+
+		/* IVSHMEM_IRQ - 32 */
+		.vpci_irq_base = 74, /* Not include 32 base */
 
 		.cpu_reset_address = CONFIG_INMATE_BASE,
 
@@ -41,6 +46,8 @@ struct {
 			.divider = 0x2a,			/* baudrate = 38400 */
 			.type    = JAILHOUSE_CON_TYPE_8250,
 			.flags   = JAILHOUSE_CON_ACCESS_MMIO | JAILHOUSE_CON_REGDIST_4,
+            .gate_nr = 23,
+            .clock_reg = 0x10001084,
 		},
 	},
 
@@ -53,6 +60,31 @@ struct {
     },
 
 	.mem_regions = {
+		/* IVSHMEM xxxx:00:00.0 */
+        {
+			.phys_start = 0x6ba00000,
+			.virt_start = 0x6ba00000,
+			.size = 0x1000,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_ROOTSHARED,
+		},
+		{
+			.phys_start = 0x6ba01000,
+			.virt_start = 0x6ba01000,
+			.size = 0xc0000,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_ROOTSHARED,
+		},
+		{
+			.phys_start = 0x6bac1000,
+			.virt_start = 0x6bac1000,
+			.size = 0x4000,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_ROOTSHARED,
+		},
+		{
+			.phys_start = 0x6bac5000,
+			.virt_start = 0x6bac5000,
+			.size = 0x4000,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_ROOTSHARED,
+		},
 		/* UART1 */
         {
 			.phys_start = 0x11001200,
@@ -79,13 +111,34 @@ struct {
 		/* GIC */
 		{
 			.address    = 0x0c000000,
+			.pin_base   = 96,
+			.pin_bitmap = {
+				0x00000400, 0x00000000, 0x00000000, 0x00000000, /* SPI 106 (IVSHMEM) */
+			},
+		},
+		{
+			.address    = 0x0c000000,
 			.pin_base   = 256,
 			.pin_bitmap = {
 				0x00000800, 0x00000000, 0x00000000, 0x00000000, /* SPI 267 */
 			},
 		},
 	},
-    
+
+	.pci_devices = {
+		/* IVSHMEM xxxx:00:00.0 */
+        {
+			.type = JAILHOUSE_PCI_TYPE_IVSHMEM,
+			.domain = 1,
+			.bdf = 0 << 3,
+			.bar_mask = JAILHOUSE_IVSHMEM_BAR_MASK_INTX,
+			.shmem_regions_start = 0,
+			.shmem_dev_id = 1,
+			.shmem_peers = 2,
+			.shmem_protocol = JAILHOUSE_SHMEM_PROTO_UNDEFINED,
+		},
+	},
+
 	.vendors = {
 		{
 			.type = JAILHOUSE_VENDOR_MTK_EINT,
