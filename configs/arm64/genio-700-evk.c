@@ -201,14 +201,14 @@ struct {
 		{
 			.phys_start = 0x60000000,
 			.virt_start = 0x60000000,
-			.size = 0x01100000,
+			.size = 0x01800000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE
 		},
 		/* DRAM:  0x0000'0000'6110'0000 - 0x0000'0000'6ac0'0000 */
 		{
-			.phys_start = 0x61100000,
-			.virt_start = 0x61100000,
-			.size = 0x09b00000,
+			.phys_start = 0x61800000,
+			.virt_start = 0x61800000,
+			.size = 0x09400000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_EXECUTE
 		},
 		/* JAILHOUSE Hypevisor:  0x0000'0000'6ac0'0000 - 0x0000'0000'6b00'0000 */
