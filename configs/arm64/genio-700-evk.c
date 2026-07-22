@@ -1,7 +1,7 @@
 /*
  * Jailhouse, a Linux-based partitioning hypervisor
  *
- * Test configuration for GENION-700-EVK (4 * Cortex-A55 and 4 * Cortex-A78, 8GB RAM)
+ * Test configuration for GENION-700-EVK (6 * Cortex-A55 and 2 * Cortex-A78, 8GB RAM)
  *
  * Copyright (c) MediaTek, 2025
  *
@@ -58,7 +58,7 @@ struct {
 		},
 	},
 
-    /* 4 * A55 (0b001111) and 4 * A78 (0b11110000) */
+    /* 6 * A55 (0b00111111) and 2 * A78 (0b11000000) */
 	.cpus = {
 		0b11111111,
 	},
