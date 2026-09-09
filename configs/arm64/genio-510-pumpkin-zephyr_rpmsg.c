@@ -1,5 +1,5 @@
 /*
- * GENIO-510-EVK target - zephyr
+ * GENIO-510-PUMPKIN target - zephyr
  *
  * Copyright 2025 MediaTek
  *
@@ -18,16 +18,16 @@ struct {
 	__u64 cpus[1];
     __u32 smc_ids [1];
 	struct jailhouse_memory mem_regions[7];
-	struct jailhouse_irqchip irqchips[3];
+	struct jailhouse_irqchip irqchips[2];
 	struct jailhouse_pci_device pci_devices[1];
 	struct jailhouse_vendor vendors[3];
 } __attribute__((packed)) config = {
 	.cell = {
-		.signature = JAILHOUSE_CELL_DESC_SIGNATURE,
-		.revision = JAILHOUSE_CONFIG_REVISION,
+		.signature    = JAILHOUSE_CELL_DESC_SIGNATURE,
+		.revision     = JAILHOUSE_CONFIG_REVISION,
 		.architecture = JAILHOUSE_ARM64,
-		.name = "zephyr",
-		.flags = JAILHOUSE_CELL_PASSIVE_COMMREG | JAILHOUSE_CELL_VIRTUAL_CONSOLE_PERMITTED,
+		.name         = "zephyr-rpmsg",
+		.flags        = JAILHOUSE_CELL_PASSIVE_COMMREG | JAILHOUSE_CELL_VIRTUAL_CONSOLE_PERMITTED,
 
 		.cpu_set_size       = sizeof(config.cpus),
 		.smc_ids_size       = ARRAY_SIZE(config.smc_ids),
@@ -42,11 +42,11 @@ struct {
 		.cpu_reset_address = CONFIG_INMATE_BASE,
 
 		.console = {
-			.address = 0x11001200,
-			.divider = 0x2a,			/* baudrate = 38400 */
-			.type = JAILHOUSE_CON_TYPE_8250,
-			.flags = JAILHOUSE_CON_ACCESS_MMIO | JAILHOUSE_CON_REGDIST_4,
-            .gate_nr = 23,
+			.address   = 0x11001200,
+			.divider   = 0x2a,			/* baudrate = 38400 */
+			.type      = JAILHOUSE_CON_TYPE_8250,
+			.flags     = JAILHOUSE_CON_ACCESS_MMIO | JAILHOUSE_CON_REGDIST_4,
+            .gate_nr   = 23,
             .clock_reg = 0x10001084,
 		},
 	},
@@ -113,22 +113,14 @@ struct {
 			.address    = 0x0c000000,
 			.pin_base   = 96,
 			.pin_bitmap = {
-				0x00000400, 0x00000000, 0x00000000, 0x00000000, /* SPI 106 (IVSHMEM) */
-			},
-		},
-		{
-			.address    = 0x0c000000,
-			.pin_base   = 160,
-			.pin_bitmap = {
-				0x00004000, 0x00000000, 0x00000000, 0x00000000	/* UART2 IRQ --> SPI 142+32 */
-            /* I2S IRQ --> SPI 822 */
+				0x00000400, 0x00000000, 0x00000000, 0x00000000  /* SPI 106 (IVSHMEM) */
 			},
 		},
 		{
 			.address    = 0x0c000000,
 			.pin_base   = 256,
 			.pin_bitmap = {
-				0x00000800, 0x00000000, 0x00000000, 0x00000000	/* EINT IRQ --> SPI 235+32 */
+				0x00000800, 0x00000000, 0x00000000, 0x00000000  /* SPI 267 */
 			},
 		},
 	},
@@ -143,8 +135,7 @@ struct {
 			.shmem_regions_start = 0,
 			.shmem_dev_id = 1,
 			.shmem_peers = 2,
-			.shmem_protocol = JAILHOUSE_SHMEM_PROTO_VIRTIO_FRONT + VIRTIO_DEV_RPMSG,
-            .shmem_deferred_reg = 1,
+			.shmem_protocol = JAILHOUSE_SHMEM_PROTO_UNDEFINED,
 		},
 	},
 
@@ -152,17 +143,17 @@ struct {
 		{
 			.type = JAILHOUSE_VENDOR_MTK_EINT,
 			.mtk_eint.address    = 0x1000b000,
-			.mtk_eint.pin_base   = 32,
+			.mtk_eint.pin_base   = 0,
 			.mtk_eint.pin_bitmap = {
-				0x00000140, 0x00000000, 0x00000000, 0x00000000	/* GPIO 38 & 40 */
+				0x00000003, 0x00000000, 0x00000000, 0x00000000	/* EINT 0 & 1 */
 			}
 		},
 		{
 			.type = JAILHOUSE_VENDOR_MTK_GPIO,
 			.mtk_gpio.address    = 0x10005000,
-			.mtk_gpio.pin_base   = 32,
+			.mtk_gpio.pin_base   = 0,
 			.mtk_gpio.pin_bitmap = {
-				0x00000146, 0x00000000, 0x00000000, 0x00000000	/* Pins 33 & 34 for UART1; GPIO 38 & 40 */
+				0x00000003, 0x00000006, 0x00000000, 0x00000000	/* Pins 0 & 1 for GPIO, Pins 33 & 34 for UART1 */
 			}
 		},
 		{
@@ -172,6 +163,6 @@ struct {
 			.mtk_clk.clk_bitmap = {
 				0x00800000, 0x00000000, 0x00000000, 0x00000000	/* CLK for UART1 */
 			}
-		}
+		},
 	},
 };
