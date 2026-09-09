@@ -19,49 +19,50 @@ struct {
 	struct jailhouse_system header;
 	__u64 cpus[1];
     __u32 smc_ids [12];
-	struct jailhouse_memory mem_regions[21];
+	struct jailhouse_memory mem_regions[22];
 	struct jailhouse_irqchip irqchips[8];
 	struct jailhouse_pci_device pci_devices[1];
 	struct jailhouse_vendor vendors[6];
 } __attribute__((packed)) config = {
 	.header = {
-		.signature = JAILHOUSE_SYSTEM_SIGNATURE,
-		.revision = JAILHOUSE_CONFIG_REVISION,
+		.signature    = JAILHOUSE_SYSTEM_SIGNATURE,
+		.revision     = JAILHOUSE_CONFIG_REVISION,
 		.architecture = JAILHOUSE_ARM64,
-		.flags = JAILHOUSE_SYS_VIRTUAL_DEBUG_CONSOLE,
+		.flags        = JAILHOUSE_SYS_VIRTUAL_DEBUG_CONSOLE,
+
 		.hypervisor_memory = {
 			.phys_start = 0x6ac00000,
 			.size       = 0x00400000,
 		},
 		.debug_console = {
 			.address = 0x11001100,
-			.size = 0x100,
-			.type = JAILHOUSE_CON_TYPE_8250,
-			.flags = JAILHOUSE_CON_ACCESS_MMIO | JAILHOUSE_CON_REGDIST_4,
+			.size    = 0x100,
+			.type    = JAILHOUSE_CON_TYPE_8250,
+			.flags   = JAILHOUSE_CON_ACCESS_MMIO | JAILHOUSE_CON_REGDIST_4,
 		},
 		.platform_info = {
-			.pci_mmconfig_base = 0x6b800000,
+			.pci_mmconfig_base    = 0x6b800000,
 			.pci_mmconfig_end_bus = 0,
-			.pci_is_virtual = 1,
-			.pci_domain = 1,
+			.pci_is_virtual       = 1,
+			.pci_domain           = 1,
 
 			.arm = {
-				.gic_version = 3,
-				.gicd_base = 0x0c000000,
-				.gicr_base = 0x0c040000,
-                .gicr_size = 0x00200000,
+				.gic_version     = 3,
+				.gicd_base       = 0x0c000000,
+				.gicr_base       = 0x0c040000,
+                .gicr_size       = 0x00200000,
 				.maintenance_irq = 25,
 			},
 		},
 		.root_cell = {
-			.name = "genio-510-evk",
+			.name = "genio-510-pumpkin",
 
-			.cpu_set_size = sizeof(config.cpus),
-			.smc_ids_size = ARRAY_SIZE(config.smc_ids),
+			.cpu_set_size       = sizeof(config.cpus),
+			.smc_ids_size       = ARRAY_SIZE(config.smc_ids),
 			.num_memory_regions = ARRAY_SIZE(config.mem_regions),
-			.num_irqchips = ARRAY_SIZE(config.irqchips),
-			.num_pci_devices = ARRAY_SIZE(config.pci_devices),
-			.num_vendors = ARRAY_SIZE(config.vendors),
+			.num_irqchips       = ARRAY_SIZE(config.irqchips),
+			.num_pci_devices    = ARRAY_SIZE(config.pci_devices),
+			.num_vendors        = ARRAY_SIZE(config.vendors),
 
 			.vpci_irq_base = 72, /* Not include 32 base */
 		},
@@ -235,14 +236,14 @@ struct {
 		{
 			.phys_start = 0x60000000,
 			.virt_start = 0x60000000,
-			.size = 0x01800000,
+			.size = 0x01100000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE
 		},
-		/* DRAM:  0x0000'0000'6180'0000 - 0x0000'0000'6ac0'0000 */
+		/* DRAM:  0x0000'0000'6110'0000 - 0x0000'0000'6ac0'0000 */
 		{
-			.phys_start = 0x61800000,
-			.virt_start = 0x61800000,
-			.size = 0x09400000,
+			.phys_start = 0x61100000,
+			.virt_start = 0x61100000,
+			.size = 0x09b00000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_EXECUTE
 		},
 		/* JAILHOUSE Hypevisor:  0x0000'0000'6ac0'0000 - 0x0000'0000'6b00'0000 */
@@ -391,6 +392,6 @@ struct {
 			.mtk_clk.clk_bitmap = {
 				0xffffffff, 0xffffffff, 0x00000000, 0x00000000
 			}
-		}
-	}
+		},
+	},
 };

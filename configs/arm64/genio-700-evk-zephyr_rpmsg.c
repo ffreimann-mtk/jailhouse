@@ -1,5 +1,5 @@
 /*
- * i510-Pumpkin target - zephyr
+ * GENIO-700-EVK target - zephyr
  *
  * Copyright 2025 MediaTek
  *
@@ -26,7 +26,7 @@ struct {
 		.signature    = JAILHOUSE_CELL_DESC_SIGNATURE,
 		.revision     = JAILHOUSE_CONFIG_REVISION,
 		.architecture = JAILHOUSE_ARM64,
-		.name         = "zephyr",
+		.name         = "zephyr-rpmsg",
 		.flags        = JAILHOUSE_CELL_PASSIVE_COMMREG | JAILHOUSE_CELL_VIRTUAL_CONSOLE_PERMITTED,
 
 		.cpu_set_size       = sizeof(config.cpus),
@@ -42,17 +42,17 @@ struct {
 		.cpu_reset_address = CONFIG_INMATE_BASE,
 
 		.console = {
-			.address = 0x11001200,
-			.divider = 0x2a,			/* baudrate = 38400 */
-			.type    = JAILHOUSE_CON_TYPE_8250,
-			.flags   = JAILHOUSE_CON_ACCESS_MMIO | JAILHOUSE_CON_REGDIST_4,
-            .gate_nr = 23,
+			.address   = 0x11001200,
+			.divider   = 0x2a,			/* baudrate = 38400 */
+			.type      = JAILHOUSE_CON_TYPE_8250,
+			.flags     = JAILHOUSE_CON_ACCESS_MMIO | JAILHOUSE_CON_REGDIST_4,
+            .gate_nr   = 23,
             .clock_reg = 0x10001084,
 		},
 	},
 
 	.cpus = {
-		0b001000,
+		0b00001000,
 	},
 
     .smc_ids = {
@@ -89,21 +89,21 @@ struct {
         {
 			.phys_start = 0x11001200,
 			.virt_start = 0x11001200,
-			.size       = 0x0100,
-			.flags      = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO | JAILHOUSE_MEM_ROOTSHARED | JAILHOUSE_MEM_IO_32,
+			.size = 0x0100,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO | JAILHOUSE_MEM_ROOTSHARED | JAILHOUSE_MEM_IO_32,
 		},
 		/* Inmate memory: 0x6b000000 - 0x6b200000 */
 		{
 			.phys_start = 0x6b000000,
 			.virt_start = CONFIG_INMATE_BASE,
-			.size       = 0x00200000,
-			.flags      = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_EXECUTE | JAILHOUSE_MEM_LOADABLE,
+			.size = 0x00200000,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_EXECUTE | JAILHOUSE_MEM_LOADABLE,
 		},
 		/* Communication region */
 		{
 			.virt_start = 0x80000000,
-			.size       = 0x00001000,
-			.flags      = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_COMM_REGION,
+			.size = 0x00001000,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_COMM_REGION,
 		},
 	},
 
@@ -113,14 +113,14 @@ struct {
 			.address    = 0x0c000000,
 			.pin_base   = 96,
 			.pin_bitmap = {
-				0x00000400, 0x00000000, 0x00000000, 0x00000000, /* SPI 106 (IVSHMEM) */
+				0x00000400, 0x00000000, 0x00000000, 0x00000000  /* SPI 106 (IVSHMEM) */
 			},
 		},
 		{
 			.address    = 0x0c000000,
 			.pin_base   = 256,
 			.pin_bitmap = {
-				0x00000800, 0x00000000, 0x00000000, 0x00000000, /* SPI 267 */
+				0x00000800, 0x00000000, 0x00000000, 0x00000000  /* SPI 267 */
 			},
 		},
 	},
@@ -163,6 +163,6 @@ struct {
 			.mtk_clk.clk_bitmap = {
 				0x00800000, 0x00000000, 0x00000000, 0x00000000	/* CLK for UART1 */
 			}
-		}
-	}
+		},
+	},
 };
