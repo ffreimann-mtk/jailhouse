@@ -202,7 +202,6 @@ struct jailhouse_irqchip {
 #define VIRTIO_DEV_NET				1
 #define VIRTIO_DEV_BLOCK			2
 #define VIRTIO_DEV_CONSOLE			3
-#define VIRTIO_DEV_RPMSG            7
 
 struct jailhouse_pci_device {
 	__u8 type;
