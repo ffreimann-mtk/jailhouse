@@ -17,9 +17,6 @@
 #include <linux/of_fdt.h>
 #include <linux/vmalloc.h>
 #include <linux/version.h>
-#include <linux/delay.h>
-#include <linux/io.h>
-#include <linux/kthread.h>
 #ifdef CONFIG_OF_OVERLAY
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #endif
@@ -36,12 +33,8 @@ struct claimed_dev {
 	struct pci_dev *dev;
 };
 
-extern struct mutex jailhouse_lock;
-
 static LIST_HEAD(claimed_devs);
 static DEFINE_SPINLOCK(claimed_devs_lock);
-
-static struct task_struct *vpci_overlay_thread = NULL;
 
 static int jailhouse_pci_stub_probe(struct pci_dev *dev,
 				    const struct pci_device_id *id)
@@ -338,12 +331,7 @@ static bool create_vpci_of_overlay(struct jailhouse_system *config)
 	gic_phandle = gic->phandle;
 
 	of_node_put(gic);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
-	if (of_overlay_fdt_apply(__dtb_vpci_template_begin,
-			__dtb_vpci_template_end - __dtb_vpci_template_begin,
-			&overlay_id, NULL) < 0)
-		return false;
-#else /* < 6.6.0 */
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0)
 	if (of_overlay_fdt_apply(__dtb_vpci_template_begin,
 			__dtb_vpci_template_end - __dtb_vpci_template_begin,
@@ -365,7 +353,6 @@ static bool create_vpci_of_overlay(struct jailhouse_system *config)
 	if (of_overlay_apply(overlay, &overlay_id) < 0)
 		goto out_compat;
 #endif /* < 4.17 */
-#endif /* < 6.6.0 */
 
 	of_changeset_init(&overlay_changeset);
 
@@ -518,213 +505,22 @@ static void destroy_vpci_of_overlay(void)
 }
 #endif
 
-static u32 *ivshmem_map_state (const struct jailhouse_pci_device *dev,
-                               const struct jailhouse_memory     *memory_regions,
-							   u32                               num_memory_regions)
+void jailhouse_pci_virtual_root_devices_add(struct jailhouse_system *config)
 {
-	u32 mem_idx;
-
-
-	if ((! (dev))                                         ||
-        (! (memory_regions))                              ||
-	    (dev->shmem_regions_start >= num_memory_regions)) {
-		return (NULL);
-	}
-
-	mem_idx = dev->shmem_regions_start;
-
-	return (memremap (memory_regions [mem_idx].phys_start, memory_regions [mem_idx].size, MEMREMAP_WB));
-}
-
-/* Return true if all IVSHMEM vPCI devices are  */
-/* initialized or the worker thread shall stop. */
-static bool is_ivshmem_init (struct cell *cell)
-{
-    const struct jailhouse_pci_device *dev;
-    unsigned int dev_idx;
-
-	if (mutex_lock_interruptible (&jailhouse_lock) != 0) {
-        pr_warn ("jailhouse: lock failure in is_ivshmem_init\n");
-
-		return (true);
-	}
-
-	/* If the worker thread shall stop simply cleanup and return. */
-	if (kthread_should_stop ()) {
-		mutex_unlock (&jailhouse_lock);
-
-		return (true);
-	}
-
-    dev = cell->pci_devices;
-	/* Cycle through all IVSHMEM devices and check whether the peer devices */
-	/* have initialized. If one has not yet initialized simply return.      */
-	for (dev_idx = 0; dev_idx < cell->num_pci_devices; dev_idx++) {
-        if ((dev->type == JAILHOUSE_PCI_TYPE_IVSHMEM) &&
-		    (dev->shmem_deferred_reg)) {
-			u32 *state = ivshmem_map_state (dev, cell->memory_regions, cell->num_memory_regions);
-
-
-			if (state) {
-				unsigned int state_idx = 0;
-
-
-				/* Check that all peer states became active. */
-				while (state_idx < dev->shmem_peers) {
-					if (state_idx != dev->shmem_dev_id) {
-						if (state [state_idx] == 0) {
-							/* Not initialized yet. Cleanup and return false. */
-							mutex_unlock (&jailhouse_lock);
-							memunmap (state);
-
-							return (false);
-						}
-					}
-
-					state_idx++;
-				}
-
-				memunmap (state);
-			}
-        }
-
-		dev++;
-    }
-
-	mutex_unlock (&jailhouse_lock);
-
-    /* All IVSHMEM vPCI devices are initialized. */
-    return true;
-}
-
-static void reg_ivshmem (struct jailhouse_system *config)
-{
-	if (mutex_lock_interruptible (&jailhouse_lock) != 0) {
-        pr_warn ("jailhouse: lock failure in reg_ivshmem\n");
+	if (config->platform_info.pci_is_virtual &&
+	    !create_vpci_of_overlay(config)) {
+		pr_warn("jailhouse: failed to add virtual host controller\n");
 		return;
 	}
 
-	if (kthread_should_stop ()) {
-		mutex_unlock (&jailhouse_lock);
-		return;
-	}
-
-    if (! (create_vpci_of_overlay (config))) {
-        pr_warn ("jailhouse: failed to add virtual host controller\n");
-    }
-
-    /* Register the IVSHMEM devices with the root cell. */
-    jailhouse_pci_do_all_devices (root_cell, JAILHOUSE_PCI_TYPE_IVSHMEM, JAILHOUSE_PCI_ACTION_ADD);
-
-	mutex_unlock (&jailhouse_lock);
+	jailhouse_pci_do_all_devices(root_cell, JAILHOUSE_PCI_TYPE_IVSHMEM,
+				     JAILHOUSE_PCI_ACTION_ADD);
 }
 
-static int vpci_overlay_worker (void *data)
+void jailhouse_pci_virtual_root_devices_remove(void)
 {
-    struct jailhouse_system *config = (struct jailhouse_system*) data;
+	jailhouse_pci_do_all_devices(root_cell, JAILHOUSE_PCI_TYPE_IVSHMEM,
+				     JAILHOUSE_PCI_ACTION_DEL);
 
-
-    /* Only run if data is provided. */
-    if (config) {
-        /* Loop till the IVSHMEM devices are initialized */
-        /* or the thread got stoipped.*/
-        while (! (is_ivshmem_init (root_cell))) {
-            cpu_relax ();
-        }
-
-		reg_ivshmem (config);
-
-		/* All done. Cleanup and exit. */
-		kfree (config);
-	}
-
-	return (0);
-}
-
-static int vpci_overlay_worker_start (struct jailhouse_system *config)
-{
-	struct jailhouse_system *cfg;
-
-
-	/* If the thread already runs don't start it again. */
-	if (vpci_overlay_thread) {
-		return (-EINVAL);
-	}
-
-	/* Create a local copy of the config header. */
-    cfg = kzalloc (sizeof (*cfg), GFP_KERNEL);
-	if (! (cfg)) {
-	    pr_err ("jailhouse: Failed to allocate memory for config header\n");
-	    return (-ENOMEM);
-	}
-
-    memcpy (cfg, config, sizeof (*cfg));
-
-	vpci_overlay_thread = kthread_run (vpci_overlay_worker, cfg, "vpci_overlay_worker");
-    if (IS_ERR (vpci_overlay_thread)) {
-		/* Error and cleanup. */
-        pr_err ("jailhouse: Failed to create vPCI worker thread\n");
-		kfree (cfg);
-        return (PTR_ERR (vpci_overlay_thread));
-    }
-
-	return (0);
-}
-
-static void vpci_overlay_worker_stop (void)
-{
-	if (vpci_overlay_thread) {
-		kthread_stop (vpci_overlay_thread);
-
-		vpci_overlay_thread = NULL;
-	}
-}
-
-static bool is_shmem_deferred_reg (struct cell *cell)
-{
-	unsigned int dev_idx;
-	const struct jailhouse_pci_device *dev;
-
-    /* At the moment, the flag 'shmem_deferred_reg' only works for */
-    /* virtual PCI devices of type JAILHOUSE_PCI_TYPE_IVSHMEM. */
-	dev = cell->pci_devices;
-	for (dev_idx = 0; dev_idx < cell->num_pci_devices; dev_idx++) {
-        if ((dev->type == JAILHOUSE_PCI_TYPE_IVSHMEM) &&
-		    (dev->shmem_deferred_reg)) {
-            return (true);
-        }
-
-		dev++;
-	}
-
-    return (false);
-}
-
-void jailhouse_pci_virtual_root_devices_add (struct jailhouse_system *config)
-{
-	bool shmem_deferred_reg;
-
-
-	shmem_deferred_reg = is_shmem_deferred_reg(root_cell);
-
-	if ((config->platform_info.pci_is_virtual) &&
-        (! (shmem_deferred_reg))               &&
-	    (! (create_vpci_of_overlay (config)))) {
-		pr_warn ("jailhouse: failed to add virtual host controller\n");
-		return;
-	}
-
-    if (shmem_deferred_reg) {
-        vpci_overlay_worker_start (config);
-    } else {
-		jailhouse_pci_do_all_devices (root_cell, JAILHOUSE_PCI_TYPE_IVSHMEM, JAILHOUSE_PCI_ACTION_ADD);
-    }
-}
-
-void jailhouse_pci_virtual_root_devices_remove (void)
-{
-    vpci_overlay_worker_stop ();
-	jailhouse_pci_do_all_devices (root_cell, JAILHOUSE_PCI_TYPE_IVSHMEM, JAILHOUSE_PCI_ACTION_DEL);
-
-	destroy_vpci_of_overlay ();
+	destroy_vpci_of_overlay();
 }
