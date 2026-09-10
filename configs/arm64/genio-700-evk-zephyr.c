@@ -62,11 +62,11 @@ struct {
 			.size = 0x0100,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO | JAILHOUSE_MEM_ROOTSHARED | JAILHOUSE_MEM_IO_32,
 		},
-		/* Inmate memory: 0x6b000000 - 0x6b200000 */
+		/* Inmate memory: 0x6b000000 - 0x6b800000 */
 		{
 			.phys_start = 0x6b000000,
 			.virt_start = CONFIG_INMATE_BASE,
-			.size = 0x00200000,
+			.size = 0x00800000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_EXECUTE | JAILHOUSE_MEM_LOADABLE,
 		},
 		/* Communication region */
