@@ -17,7 +17,7 @@ struct {
 	struct jailhouse_cell_desc cell;
 	__u64 cpus[1];
     __u32 smc_ids [1];
-	struct jailhouse_memory mem_regions[9];
+	struct jailhouse_memory mem_regions[10];
 	struct jailhouse_irqchip irqchips[2];
 	struct jailhouse_vendor vendors[4];
 } __attribute__((packed)) config = {
@@ -59,6 +59,13 @@ struct {
 			.virt_start = 0x10000000,
 			.size = 0x1000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO | JAILHOUSE_MEM_ROOTSHARED,
+		},
+		/* infra_a0 */
+		{
+			.phys_start = 0x10001400,
+			.virt_start = 0x10001400,
+			.size = 0x00000c00,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO | JAILHOUSE_MEM_ROOTSHARED | JAILHOUSE_MEM_IO_32,
 		},
 		/* toprgu */
 	        {

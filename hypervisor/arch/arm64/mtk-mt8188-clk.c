@@ -35,7 +35,7 @@
 #define CLK_OFFSET_A_4      0x00e8
 
 
-#define CLK_SIZE   (0x0001000)
+#define CLK_SIZE   (0x00000400)
 #define REG_SIZE   (sizeof (u32))
 
 /* The following two macro's are required to customize the common macro's. */
