@@ -19,7 +19,7 @@ struct {
 	struct jailhouse_system header;
 	__u64 cpus[1];
     __u32 smc_ids [12];
-	struct jailhouse_memory mem_regions[17];
+	struct jailhouse_memory mem_regions[18];
 	struct jailhouse_irqchip irqchips[8];
 	struct jailhouse_vendor vendors[6];
 } __attribute__((packed)) config = {
@@ -83,7 +83,8 @@ struct {
 		/* MMIO:           0x0000'0000'0000'0000 - 0x0000'0000'0c00'0000 */
 		/* GIC:            0x0000'0000'0c00'0000 - 0x0000'0000'0c24'0000 */
 		/* MMIO:           0x0000'0000'0c24'0000 - 0x0000'0000'1000'1000 */
-		/* CLK:            0x0000'0000'1000'1000 - 0x0000'0000'1000'2000 */
+		/* CLK:            0x0000'0000'1000'1000 - 0x0000'0000'1000'1400 */
+		/* MMIO:           0x0000'0000'1000'1400 - 0x0000'0000'1000'2000 */
 		/* MMIO:           0x0000'0000'1000'2000 - 0x0000'0000'1000'5000 */
 		/* GPIO:           0x0000'0000'1000'5000 - 0x0000'0000'1000'6000 */
 		/* MMIO:           0x0000'0000'1000'6000 - 0x0000'0000'1000'c000 */
@@ -117,7 +118,14 @@ struct {
 			.size = 0x03dc1000,
 			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO
 		},
-		/* CLK:   0x0000'0000'1000'1000 - 0x0000'0000'1000'2000 */
+		/* CLK:   0x0000'0000'1000'1000 - 0x0000'0000'1000'1400 */
+		/* MMIO:  0x0000'0000'1000'1400 - 0x0000'0000'1000'2000 */
+		{
+			.phys_start = 0x10001400,
+			.virt_start = 0x10001400,
+			.size = 0x00000c00,
+			.flags = JAILHOUSE_MEM_READ | JAILHOUSE_MEM_WRITE | JAILHOUSE_MEM_IO | JAILHOUSE_MEM_IO_32,
+		},
 		/* MMIO:  0x0000'0000'1000'2000 - 0x0000'0000'1000'5000 */
 		{
 			.phys_start = 0x10002000,
